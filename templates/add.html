@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Waste</title>
+</head>
+<body>
+
+<h2>Add Waste Details</h2>
+
+<form method="post">
+    <label>Area:</label><br>
+    <input type="text" name="area" required><br><br>
+
+    <label>Waste Type:</label><br>
+    <select name="waste_type" required>
+        <option value="Wet">Wet</option>
+        <option value="Dry">Dry</option>
+    </select><br><br>
+
+    <label>Quantity (kg):</label><br>
+    <input type="number" name="quantity" required><br><br>
+
+    <label>Date:</label><br>
+    <input type="date" name="date" required><br><br>
+
+    <button type="submit">Add Waste</button>
+</form>
+
+<br>
+<a href="{{ url_for('index') }}">⬅ Back to Home</a>
+
+</body>
+</html>
