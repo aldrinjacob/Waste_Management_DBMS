@@ -22,16 +22,30 @@ with get_db_connection() as conn:
         )
     """)
     conn.commit()
+
 with get_db_connection() as conn:
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            role TEXT NOT NULL,
+            status TEXT NOT NULL
         )
     """)
-    conn.commit()   
+    conn.commit()
 
+with get_db_connection() as conn:
+    admin = conn.execute(
+        "SELECT * FROM users WHERE username = 'admin'"
+    ).fetchone()
+
+    if not admin:
+        conn.execute(
+            "INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)",
+            ('admin', 'admin123', 'admin', 'approved')
+        )
+        conn.commit()
 # ---------------- READ ----------------
 @app.route('/')
 def index():
@@ -93,27 +107,9 @@ def delete(id):
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
-@app.route('/signup', methods=('GET', 'POST'))
+@app.route('/signup')
 def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        conn = get_db_connection()
-        try:
-            conn.execute(
-                'INSERT INTO users (username, password) VALUES (?, ?)',
-                (username, password)
-            )
-            conn.commit()
-        except:
-            conn.close()
-            return "Username already exists"
-        conn.close()
-
-        return redirect(url_for('login'))
-
-    return render_template('signup.html')
+    return "Signup is disabled. Contact admin for access."
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -122,22 +118,72 @@ def login():
 
         conn = get_db_connection()
         user = conn.execute(
-            'SELECT * FROM users WHERE username=? AND password=?',
+            "SELECT * FROM users WHERE username=? AND password=? AND status='approved'",
             (username, password)
         ).fetchone()
         conn.close()
 
         if user:
             session['user'] = username
+            session['role'] = user['role']
             return redirect(url_for('index'))
         else:
-            return "Invalid username or password"
+            return "Access denied. User not approved or invalid credentials."
 
     return render_template('login.html')
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
+@app.route('/admin')
+def admin_dashboard():
+    if 'user' not in session or session.get('role') != 'admin':
+        return "Access denied. Admins only."
+
+    conn = get_db_connection()
+    users = conn.execute("SELECT * FROM users").fetchall()
+    conn.close()
+
+    return render_template('admin.html', users=users)
+
+@app.route('/approve/<int:user_id>')
+def approve_user(user_id):
+    if 'user' not in session or session.get('role') != 'admin':
+        return "Access denied. Admins only."
+
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE users SET status='approved' WHERE id=?",
+        (user_id,)
+    )
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('admin_dashboard'))
+@app.route('/add_user', methods=('GET', 'POST'))
+def add_user():
+    if 'user' not in session or session.get('role') != 'admin':
+        return "Access denied. Admins only."
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        try:
+            conn.execute(
+                "INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)",
+                (username, password, 'user', 'pending')
+            )
+            conn.commit()
+        except:
+            conn.close()
+            return "Username already exists"
+        conn.close()
+
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('add_user.html')
 
 # ---------------- RUN APP ----------------
 if __name__ == "__main__":

@@ -2,23 +2,28 @@
 <html>
 <head>
     <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+
+<div class="container">
 
 <h2>Login</h2>
 
 <form method="post">
-    Username:<br>
-    <input type="text" name="username" required><br><br>
+    <label>Username</label>
+    <input type="text" name="username" required>
 
-    Password:<br>
-    <input type="password" name="password" required><br><br>
+    <label>Password</label>
+    <input type="password" name="password" required>
 
     <button type="submit">Login</button>
 </form>
 
 <br>
-<a href="/signup">New user? Signup here</a>
+<a href="/signup">Signup disabled – contact admin</a>
+
+</div>
 
 </body>
 </html>

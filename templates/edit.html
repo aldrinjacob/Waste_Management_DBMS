@@ -2,32 +2,34 @@
 <html>
 <head>
     <title>Edit Waste</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<h2>Edit Waste Details</h2>
+<div class="container">
 
-<form method="post">
-    <label>Area:</label><br>
-    <input type="text" name="area" value="{{ waste.area }}" required><br><br>
+    <h2>Edit Waste Record</h2>
 
-    <label>Waste Type:</label><br>
-    <select name="waste_type" required>
-        <option value="Wet" {% if waste.waste_type == 'Wet' %}selected{% endif %}>Wet</option>
-        <option value="Dry" {% if waste.waste_type == 'Dry' %}selected{% endif %}>Dry</option>
-    </select><br><br>
+    <form method="post">
+        <label>Area</label>
+        <input type="text" name="area" value="{{ waste.area }}" required>
 
-    <label>Quantity (kg):</label><br>
-    <input type="number" name="quantity" value="{{ waste.quantity }}" required><br><br>
+        <label>Waste Type</label>
+        <input type="text" name="waste_type" value="{{ waste.waste_type }}" required>
 
-    <label>Date:</label><br>
-    <input type="date" name="date" value="{{ waste.date }}" required><br><br>
+        <label>Quantity (kg)</label>
+        <input type="number" name="quantity" value="{{ waste.quantity }}" required>
 
-    <button type="submit">Update Waste</button>
-</form>
+        <label>Date</label>
+        <input type="date" name="date" value="{{ waste.date }}" required>
 
-<br>
-<a href="{{ url_for('index') }}">⬅ Back to Home</a>
+        <button type="submit">Update Waste</button>
+    </form>
+
+    <br>
+    <a href="/" class="button">⬅ Back to Home</a>
+
+</div>
 
 </body>
 </html>

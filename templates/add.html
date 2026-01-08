@@ -2,32 +2,34 @@
 <html>
 <head>
     <title>Add Waste</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<h2>Add Waste Details</h2>
+<div class="container">
 
-<form method="post">
-    <label>Area:</label><br>
-    <input type="text" name="area" required><br><br>
+    <h2>Add Waste Record</h2>
 
-    <label>Waste Type:</label><br>
-    <select name="waste_type" required>
-        <option value="Wet">Wet</option>
-        <option value="Dry">Dry</option>
-    </select><br><br>
+    <form method="post">
+        <label>Area</label>
+        <input type="text" name="area" required>
 
-    <label>Quantity (kg):</label><br>
-    <input type="number" name="quantity" required><br><br>
+        <label>Waste Type</label>
+        <input type="text" name="waste_type" required>
 
-    <label>Date:</label><br>
-    <input type="date" name="date" required><br><br>
+        <label>Quantity (kg)</label>
+        <input type="number" name="quantity" required>
 
-    <button type="submit">Add Waste</button>
-</form>
+        <label>Date</label>
+        <input type="date" name="date" required>
 
-<br>
-<a href="{{ url_for('index') }}">⬅ Back to Home</a>
+        <button type="submit">Add Waste</button>
+    </form>
+
+    <br>
+    <a href="/" class="button">⬅ Back to Home</a>
+
+</div>
 
 </body>
 </html>
