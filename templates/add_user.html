@@ -1,27 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add New User</title>
+    <title>Add User</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="container">
 
-    <h2>Add New User (Admin Only)</h2>
+    <div class="header">
+        <h2>Add New User</h2>
+        <p>Admin Controlled User Creation</p>
+    </div>
 
-    <form method="post">
-        <label>Username</label>
-        <input type="text" name="username" required>
+    <div class="content">
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+        <form method="post">
+            <label>Username</label>
+            <input type="text" name="username" required>
 
-        <button type="submit">Create User</button>
-    </form>
+            <label>Password</label>
+            <input type="password" name="password" required>
 
-    <br>
-    <a href="/admin" class="button">⬅ Back to Admin Dashboard</a>
+            <button type="submit">Create User</button>
+        </form>
+
+        <br>
+        <a href="/admin" class="button">Back to Dashboard</a>
+
+    </div>
 
 </div>
 

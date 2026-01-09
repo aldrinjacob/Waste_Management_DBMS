@@ -1,27 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>Login | Waste Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Extra styling only for login page */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a73e8, #43cea2);
+        }
+
+        .login-card {
+            background: white;
+            width: 380px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 10px;
+            color: #1a73e8;
+        }
+
+        .login-card p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .login-card label {
+            float: left;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #1a73e8;
+            color: white;
+            font-size: 15px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        .login-card button:hover {
+            background: #1558b0;
+        }
+
+        .login-footer {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #777;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
+<div class="login-wrapper">
 
-<h2>Login</h2>
+    <div class="login-card">
 
-<form method="post">
-    <label>Username</label>
-    <input type="text" name="username" required>
+        <h2>Waste Management System</h2>
+        <p>Secure Login Portal</p>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
+        <form method="post">
+            <label>Username</label>
+            <input type="text" name="username" required>
 
-    <button type="submit">Login</button>
-</form>
+            <label>Password</label>
+            <input type="password" name="password" required>
 
-<br>
-<a href="/signup">Signup disabled – contact admin</a>
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="login-footer">
+            Signup is disabled. Please contact administrator.
+        </div>
+
+    </div>
 
 </div>
 

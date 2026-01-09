@@ -8,26 +8,33 @@
 
 <div class="container">
 
-    <h2>Edit Waste Record</h2>
+    <div class="header">
+        <h2>Edit Waste Record</h2>
+        <p>Update waste information</p>
+    </div>
 
-    <form method="post">
-        <label>Area</label>
-        <input type="text" name="area" value="{{ waste.area }}" required>
+    <div class="content">
 
-        <label>Waste Type</label>
-        <input type="text" name="waste_type" value="{{ waste.waste_type }}" required>
+        <form method="post">
+            <label>Area</label>
+            <input type="text" name="area" value="{{ waste.area }}" required>
 
-        <label>Quantity (kg)</label>
-        <input type="number" name="quantity" value="{{ waste.quantity }}" required>
+            <label>Waste Type</label>
+            <input type="text" name="waste_type" value="{{ waste.waste_type }}" required>
 
-        <label>Date</label>
-        <input type="date" name="date" value="{{ waste.date }}" required>
+            <label>Quantity (kg)</label>
+            <input type="number" name="quantity" value="{{ waste.quantity }}" required>
 
-        <button type="submit">Update Waste</button>
-    </form>
+            <label>Date</label>
+            <input type="date" name="date" value="{{ waste.date }}" required>
 
-    <br>
-    <a href="/" class="button">⬅ Back to Home</a>
+            <button type="submit">Update Waste</button>
+        </form>
+
+        <br>
+        <a href="/" class="button">Back to Home</a>
+
+    </div>
 
 </div>
 

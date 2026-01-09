@@ -8,42 +8,48 @@
 
 <div class="container">
 
-    <div class="top-bar">
+    <div class="header">
         <h2>Waste Management System</h2>
-        <a href="/logout" class="button">Logout</a>
+        <p>Smart & Secure Waste Record Management</p>
     </div>
 
-    {% if session.get('role') == 'admin' %}
-        <a href="/admin" class="button">Admin Dashboard</a>
-    {% endif %}
+    <div class="content">
 
-    <a href="{{ url_for('add') }}" class="button">➕ Add Waste</a>
+        <a href="/logout" class="button">Logout</a>
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Area</th>
-            <th>Waste Type</th>
-            <th>Quantity (kg)</th>
-            <th>Date</th>
-            <th>Action</th>
-        </tr>
+        {% if session.get('role') == 'admin' %}
+            <a href="/admin" class="button">Admin Dashboard</a>
+        {% endif %}
 
-        {% for waste in wastes %}
-        <tr>
-            <td>{{ waste.id }}</td>
-            <td>{{ waste.area }}</td>
-            <td>{{ waste.waste_type }}</td>
-            <td>{{ waste.quantity }}</td>
-            <td>{{ waste.date }}</td>
-            <td>
-                <a href="{{ url_for('edit', id=waste.id) }}">Edit</a> |
-                <a href="{{ url_for('delete', id=waste.id) }}"
-                   onclick="return confirm('Are you sure?')">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+        <a href="{{ url_for('add') }}" class="button">➕ Add Waste</a>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Area</th>
+                <th>Waste Type</th>
+                <th>Quantity (kg)</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+
+            {% for waste in wastes %}
+            <tr>
+                <td>{{ waste.id }}</td>
+                <td>{{ waste.area }}</td>
+                <td>{{ waste.waste_type }}</td>
+                <td>{{ waste.quantity }}</td>
+                <td>{{ waste.date }}</td>
+                <td>
+                    <a href="{{ url_for('edit', id=waste.id) }}">Edit</a> |
+                    <a href="{{ url_for('delete', id=waste.id) }}"
+                       onclick="return confirm('Are you sure?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
 
 </div>
 
