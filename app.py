@@ -52,9 +52,25 @@ def index():
     if 'user' not in session:
         return redirect(url_for('login'))
 
+    sort = request.args.get('sort')
+
+    query = "SELECT * FROM waste"
+
+    if sort == "date_new":
+        query += " ORDER BY date DESC"
+    elif sort == "date_old":
+        query += " ORDER BY date ASC"
+    elif sort == "area":
+        query += " ORDER BY area ASC"
+    elif sort == "waste_type":
+        query += " ORDER BY waste_type ASC"
+    elif sort == "quantity":
+        query += " ORDER BY quantity DESC"
+
     conn = get_db_connection()
-    wastes = conn.execute('SELECT * FROM waste').fetchall()
+    wastes = conn.execute(query).fetchall()
     conn.close()
+
     return render_template('index.html', wastes=wastes)
 # ---------------- CREATE ----------------
 @app.route('/add', methods=('GET', 'POST'))
