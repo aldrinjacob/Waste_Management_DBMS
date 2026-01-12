@@ -10,7 +10,7 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-# ---------------- CREATE TABLE ----------------
+# ---------------- CREATE TABLES ----------------
 with get_db_connection() as conn:
     conn.execute("""
         CREATE TABLE IF NOT EXISTS waste (
@@ -35,9 +35,10 @@ with get_db_connection() as conn:
     """)
     conn.commit()
 
+# ---------------- CREATE DEFAULT ADMIN ----------------
 with get_db_connection() as conn:
     admin = conn.execute(
-        "SELECT * FROM users WHERE username = 'admin'"
+        "SELECT * FROM users WHERE username='admin'"
     ).fetchone()
 
     if not admin:
@@ -46,14 +47,20 @@ with get_db_connection() as conn:
             ('admin', 'admin123', 'admin', 'approved')
         )
         conn.commit()
-# ---------------- READ ----------------
+
+# ---------------- ROOT (ALWAYS LOGIN FIRST) ----------------
 @app.route('/')
+def root():
+    session.clear()
+    return redirect(url_for('login'))
+
+# ---------------- DASHBOARD (WASTE LIST + SORTING) ----------------
+@app.route('/dashboard')
 def index():
     if 'user' not in session:
         return redirect(url_for('login'))
 
     sort = request.args.get('sort')
-
     query = "SELECT * FROM waste"
 
     if sort == "date_new":
@@ -72,9 +79,13 @@ def index():
     conn.close()
 
     return render_template('index.html', wastes=wastes)
-# ---------------- CREATE ----------------
+
+# ---------------- ADD WASTE ----------------
 @app.route('/add', methods=('GET', 'POST'))
 def add():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         area = request.form['area']
         waste_type = request.form['waste_type']
@@ -92,11 +103,14 @@ def add():
 
     return render_template('add.html')
 
-# ---------------- UPDATE ----------------
+# ---------------- EDIT WASTE ----------------
 @app.route('/edit/<int:id>', methods=('GET', 'POST'))
 def edit(id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     conn = get_db_connection()
-    waste = conn.execute('SELECT * FROM waste WHERE id = ?', (id,)).fetchone()
+    waste = conn.execute('SELECT * FROM waste WHERE id=?', (id,)).fetchone()
 
     if request.method == 'POST':
         area = request.form['area']
@@ -115,17 +129,19 @@ def edit(id):
     conn.close()
     return render_template('edit.html', waste=waste)
 
-# ---------------- DELETE ----------------
+# ---------------- DELETE WASTE ----------------
 @app.route('/delete/<int:id>')
 def delete(id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
     conn = get_db_connection()
-    conn.execute('DELETE FROM waste WHERE id = ?', (id,))
+    conn.execute('DELETE FROM waste WHERE id=?', (id,))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
-@app.route('/signup')
-def signup():
-    return "Signup is disabled. Contact admin for access."
+
+# ---------------- LOGIN ----------------
 @app.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -144,13 +160,17 @@ def login():
             session['role'] = user['role']
             return redirect(url_for('index'))
         else:
-            return "Access denied. User not approved or invalid credentials."
+            return "Access denied. Invalid credentials or not approved."
 
     return render_template('login.html')
+
+# ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
-    session.pop('user', None)
+    session.clear()
     return redirect(url_for('login'))
+
+# ---------------- ADMIN DASHBOARD ----------------
 @app.route('/admin')
 def admin_dashboard():
     if 'user' not in session or session.get('role') != 'admin':
@@ -162,6 +182,7 @@ def admin_dashboard():
 
     return render_template('admin.html', users=users)
 
+# ---------------- APPROVE USER ----------------
 @app.route('/approve/<int:user_id>')
 def approve_user(user_id):
     if 'user' not in session or session.get('role') != 'admin':
@@ -176,6 +197,8 @@ def approve_user(user_id):
     conn.close()
 
     return redirect(url_for('admin_dashboard'))
+
+# ---------------- ADD USER (ADMIN) ----------------
 @app.route('/add_user', methods=('GET', 'POST'))
 def add_user():
     if 'user' not in session or session.get('role') != 'admin':
@@ -201,5 +224,6 @@ def add_user():
 
     return render_template('add_user.html')
 
+# ---------------- RUN ----------------
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
