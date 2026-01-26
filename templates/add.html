@@ -7,35 +7,35 @@
 <body>
 
 <div class="container">
+    <h2>Add Waste Record</h2>
 
-    <div class="header">
-        <h2>Add Waste Record</h2>
-        <p>Enter waste collection details</p>
-    </div>
+    <form method="post">
 
-    <div class="content">
+        <label>Area</label>
+        <select name="area_id" required>
+            {% for area in areas %}
+            <option value="{{ area['area_id'] }}">{{ area['area_name'] }}</option>
+            {% endfor %}
+        </select>
 
-        <form method="post">
-            <label>Area</label>
-            <input type="text" name="area" required>
+        <label>Waste Type</label>
+        <select name="type_id" required>
+            {% for wt in waste_types %}
+            <option value="{{ wt['type_id'] }}">{{ wt['type_name'] }}</option>
+            {% endfor %}
+        </select>
 
-            <label>Waste Type</label>
-            <input type="text" name="waste_type" required>
+        <label>Quantity (kg)</label>
+        <input type="number" name="quantity" required>
 
-            <label>Quantity (kg)</label>
-            <input type="number" name="quantity" required>
+        <label>Date</label>
+        <input type="date" name="date" required>
 
-            <label>Date</label>
-            <input type="date" name="date" required>
+        <button type="submit">Add Waste</button>
+    </form>
 
-            <button type="submit">Add Waste</button>
-        </form>
-
-        <br>
-        <a href="/" class="button">Back to Home</a>
-
-    </div>
-
+    <br>
+    <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
 </div>
 
 </body>

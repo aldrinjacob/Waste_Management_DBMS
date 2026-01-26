@@ -7,35 +7,41 @@
 <body>
 
 <div class="container">
+    <h2>Edit Waste Record</h2>
 
-    <div class="header">
-        <h2>Edit Waste Record</h2>
-        <p>Update waste information</p>
-    </div>
+    <form method="post">
 
-    <div class="content">
+        <label>Area</label>
+        <select name="area_id" required>
+            {% for area in areas %}
+            <option value="{{ area['area_id'] }}"
+                {% if area['area_id'] == waste['area_id'] %}selected{% endif %}>
+                {{ area['area_name'] }}
+            </option>
+            {% endfor %}
+        </select>
 
-        <form method="post">
-            <label>Area</label>
-            <input type="text" name="area" value="{{ waste.area }}" required>
+        <label>Waste Type</label>
+        <select name="type_id" required>
+            {% for wt in waste_types %}
+            <option value="{{ wt['type_id'] }}"
+                {% if wt['type_id'] == waste['type_id'] %}selected{% endif %}>
+                {{ wt['type_name'] }}
+            </option>
+            {% endfor %}
+        </select>
 
-            <label>Waste Type</label>
-            <input type="text" name="waste_type" value="{{ waste.waste_type }}" required>
+        <label>Quantity (kg)</label>
+        <input type="number" name="quantity" value="{{ waste['quantity'] }}" required>
 
-            <label>Quantity (kg)</label>
-            <input type="number" name="quantity" value="{{ waste.quantity }}" required>
+        <label>Date</label>
+        <input type="date" name="date" value="{{ waste['record_date'] }}" required>
 
-            <label>Date</label>
-            <input type="date" name="date" value="{{ waste.date }}" required>
+        <button type="submit">Update Waste</button>
+    </form>
 
-            <button type="submit">Update Waste</button>
-        </form>
-
-        <br>
-        <a href="/" class="button">Back to Home</a>
-
-    </div>
-
+    <br>
+    <a href="{{ url_for('dashboard') }}">⬅ Back to Dashboard</a>
 </div>
 
 </body>

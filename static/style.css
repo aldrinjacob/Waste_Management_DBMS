@@ -142,3 +142,39 @@ button:hover {
     color: #ff9800;
     font-weight: bold;
 }
+/* ===== Sorting Bar Styling ===== */
+.sort-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+}
+
+.sort-bar label {
+    font-weight: 600;
+    font-size: 15px;
+    color: #2c3e50;
+}
+
+.sort-bar select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.sort-bar button {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: none;
+    background: linear-gradient(135deg, #1a73e8, #43cea2);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.sort-bar button:hover {
+    opacity: 0.9;
+}

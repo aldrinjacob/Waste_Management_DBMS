@@ -124,6 +124,44 @@ def add():
 
     return render_template('add.html', areas=areas, waste_types=waste_types)
 
+# ---------------- EDIT WASTE ----------------
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit(id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        cur.execute(
+            """
+            UPDATE waste_records
+            SET area_id=%s, type_id=%s, quantity=%s, record_date=%s
+            WHERE record_id=%s
+            """,
+            (
+                request.form['area_id'],
+                request.form['type_id'],
+                request.form['quantity'],
+                request.form['date'],
+                id
+            )
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    cur.execute("SELECT * FROM waste_records WHERE record_id=%s", (id,))
+    waste = cur.fetchone()
+    cur.execute("SELECT * FROM areas")
+    areas = cur.fetchall()
+    cur.execute("SELECT * FROM waste_types")
+    waste_types = cur.fetchall()
+    conn.close()
+
+    return render_template('edit.html', waste=waste, areas=areas, waste_types=waste_types)
+
 # ---------------- DELETE WASTE ----------------
 @app.route('/delete/<int:id>')
 def delete(id):
@@ -169,46 +207,35 @@ def approve_user(user_id):
 
     return redirect(url_for('admin_dashboard'))
 
-# ---------------- EDIT WASTE ----------------
-@app.route('/edit/<int:id>', methods=['GET', 'POST'])
-def edit(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    conn = get_db_connection()
-    cur = conn.cursor()
+# ---------------- ADD USER (ADMIN ONLY) ----------------
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    if 'user' not in session or session.get('role') != 'admin':
+        return "Access denied. Admins only."
 
     if request.method == 'POST':
-        cur.execute(
-            """
-            UPDATE waste_records
-            SET area_id=%s, type_id=%s, quantity=%s, record_date=%s
-            WHERE record_id=%s
-            """,
-            (
-                request.form['area_id'],
-                request.form['type_id'],
-                request.form['quantity'],
-                request.form['date'],
-                id
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                INSERT INTO users (username, password, role, status)
+                VALUES (%s, %s, 'user', 'pending')
+                """,
+                (username, password)
             )
-        )
-        conn.commit()
+            conn.commit()
+        except:
+            conn.close()
+            return "Username already exists"
         conn.close()
-        return redirect(url_for('dashboard'))
 
-    # GET request → load data
-    cur.execute("SELECT * FROM waste_records WHERE record_id=%s", (id,))
-    waste = cur.fetchone()
+        return redirect(url_for('admin_dashboard'))
 
-    cur.execute("SELECT * FROM areas")
-    areas = cur.fetchall()
-
-    cur.execute("SELECT * FROM waste_types")
-    waste_types = cur.fetchall()
-
-    conn.close()
-    return render_template('edit.html', waste=waste, areas=areas, waste_types=waste_types)
+    return render_template('add_user.html')
 
 # ---------------- RUN APP ----------------
 if __name__ == "__main__":
