@@ -1,166 +1,47 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import sqlite3
+import pymysql
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
 # ---------------- DATABASE CONNECTION ----------------
 def get_db_connection():
-    conn = sqlite3.connect('waste.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    return pymysql.connect(
+        host="localhost",
+        user="waste_user",
+        password="waste123",
+        database="waste_management",
+        cursorclass=pymysql.cursors.DictCursor
+    )
 
-# ---------------- CREATE TABLES ----------------
-with get_db_connection() as conn:
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS waste (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            area TEXT NOT NULL,
-            waste_type TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
-            date TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-
-with get_db_connection() as conn:
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL,
-            status TEXT NOT NULL
-        )
-    """)
-    conn.commit()
-
-# ---------------- CREATE DEFAULT ADMIN ----------------
-with get_db_connection() as conn:
-    admin = conn.execute(
-        "SELECT * FROM users WHERE username='admin'"
-    ).fetchone()
-
-    if not admin:
-        conn.execute(
-            "INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)",
-            ('admin', 'admin123', 'admin', 'approved')
-        )
-        conn.commit()
-
-# ---------------- ROOT (ALWAYS LOGIN FIRST) ----------------
+# ---------------- ROOT → ALWAYS LOGIN FIRST ----------------
 @app.route('/')
 def root():
     session.clear()
     return redirect(url_for('login'))
 
-# ---------------- DASHBOARD (WASTE LIST + SORTING) ----------------
-@app.route('/dashboard')
-def index():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    sort = request.args.get('sort')
-    query = "SELECT * FROM waste"
-
-    if sort == "date_new":
-        query += " ORDER BY date DESC"
-    elif sort == "date_old":
-        query += " ORDER BY date ASC"
-    elif sort == "area":
-        query += " ORDER BY area ASC"
-    elif sort == "waste_type":
-        query += " ORDER BY waste_type ASC"
-    elif sort == "quantity":
-        query += " ORDER BY quantity DESC"
-
-    conn = get_db_connection()
-    wastes = conn.execute(query).fetchall()
-    conn.close()
-
-    return render_template('index.html', wastes=wastes)
-
-# ---------------- ADD WASTE ----------------
-@app.route('/add', methods=('GET', 'POST'))
-def add():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    if request.method == 'POST':
-        area = request.form['area']
-        waste_type = request.form['waste_type']
-        quantity = request.form['quantity']
-        date = request.form['date']
-
-        conn = get_db_connection()
-        conn.execute(
-            'INSERT INTO waste (area, waste_type, quantity, date) VALUES (?, ?, ?, ?)',
-            (area, waste_type, quantity, date)
-        )
-        conn.commit()
-        conn.close()
-        return redirect(url_for('index'))
-
-    return render_template('add.html')
-
-# ---------------- EDIT WASTE ----------------
-@app.route('/edit/<int:id>', methods=('GET', 'POST'))
-def edit(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    conn = get_db_connection()
-    waste = conn.execute('SELECT * FROM waste WHERE id=?', (id,)).fetchone()
-
-    if request.method == 'POST':
-        area = request.form['area']
-        waste_type = request.form['waste_type']
-        quantity = request.form['quantity']
-        date = request.form['date']
-
-        conn.execute(
-            'UPDATE waste SET area=?, waste_type=?, quantity=?, date=? WHERE id=?',
-            (area, waste_type, quantity, date, id)
-        )
-        conn.commit()
-        conn.close()
-        return redirect(url_for('index'))
-
-    conn.close()
-    return render_template('edit.html', waste=waste)
-
-# ---------------- DELETE WASTE ----------------
-@app.route('/delete/<int:id>')
-def delete(id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    conn = get_db_connection()
-    conn.execute('DELETE FROM waste WHERE id=?', (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('index'))
-
 # ---------------- LOGIN ----------------
-@app.route('/login', methods=('GET', 'POST'))
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
         conn = get_db_connection()
-        user = conn.execute(
-            "SELECT * FROM users WHERE username=? AND password=? AND status='approved'",
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT * FROM users WHERE username=%s AND password=%s AND status='approved'",
             (username, password)
-        ).fetchone()
+        )
+        user = cur.fetchone()
         conn.close()
 
         if user:
-            session['user'] = username
+            session['user'] = user['username']
             session['role'] = user['role']
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
-            return "Access denied. Invalid credentials or not approved."
+            return "Access denied. Invalid credentials or user not approved."
 
     return render_template('login.html')
 
@@ -170,6 +51,93 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ---------------- DASHBOARD (JOIN + SORTING) ----------------
+@app.route('/dashboard')
+def dashboard():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    sort = request.args.get('sort')
+
+    query = """
+        SELECT 
+            wr.record_id,
+            a.area_name AS area,
+            wt.type_name AS waste_type,
+            wr.quantity,
+            DATE_FORMAT(wr.record_date, '%d-%m-%Y') AS date
+        FROM waste_records wr
+        JOIN areas a ON wr.area_id = a.area_id
+        JOIN waste_types wt ON wr.type_id = wt.type_id
+    """
+
+    if sort == "date_new":
+        query += " ORDER BY wr.record_date DESC"
+    elif sort == "date_old":
+        query += " ORDER BY wr.record_date ASC"
+    elif sort == "area":
+        query += " ORDER BY a.area_name ASC"
+    elif sort == "waste_type":
+        query += " ORDER BY wt.type_name ASC"
+    elif sort == "quantity":
+        query += " ORDER BY wr.quantity DESC"
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(query)
+    wastes = cur.fetchall()
+    conn.close()
+
+    return render_template('index.html', wastes=wastes)
+
+# ---------------- ADD WASTE ----------------
+@app.route('/add', methods=['GET', 'POST'])
+def add():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        cur.execute(
+            """
+            INSERT INTO waste_records (area_id, type_id, quantity, record_date)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (
+                request.form['area_id'],
+                request.form['type_id'],
+                request.form['quantity'],
+                request.form['date']
+            )
+        )
+        conn.commit()
+        conn.close()
+        return redirect(url_for('dashboard'))
+
+    cur.execute("SELECT * FROM areas")
+    areas = cur.fetchall()
+    cur.execute("SELECT * FROM waste_types")
+    waste_types = cur.fetchall()
+    conn.close()
+
+    return render_template('add.html', areas=areas, waste_types=waste_types)
+
+# ---------------- DELETE WASTE ----------------
+@app.route('/delete/<int:id>')
+def delete(id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM waste_records WHERE record_id=%s", (id,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('dashboard'))
+
 # ---------------- ADMIN DASHBOARD ----------------
 @app.route('/admin')
 def admin_dashboard():
@@ -177,7 +145,9 @@ def admin_dashboard():
         return "Access denied. Admins only."
 
     conn = get_db_connection()
-    users = conn.execute("SELECT * FROM users").fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users")
+    users = cur.fetchall()
     conn.close()
 
     return render_template('admin.html', users=users)
@@ -189,8 +159,9 @@ def approve_user(user_id):
         return "Access denied. Admins only."
 
     conn = get_db_connection()
-    conn.execute(
-        "UPDATE users SET status='approved' WHERE id=?",
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE users SET status='approved' WHERE user_id=%s",
         (user_id,)
     )
     conn.commit()
@@ -198,32 +169,47 @@ def approve_user(user_id):
 
     return redirect(url_for('admin_dashboard'))
 
-# ---------------- ADD USER (ADMIN) ----------------
-@app.route('/add_user', methods=('GET', 'POST'))
-def add_user():
-    if 'user' not in session or session.get('role') != 'admin':
-        return "Access denied. Admins only."
+# ---------------- EDIT WASTE ----------------
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+def edit(id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
 
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        conn = get_db_connection()
-        try:
-            conn.execute(
-                "INSERT INTO users (username, password, role, status) VALUES (?, ?, ?, ?)",
-                (username, password, 'user', 'pending')
+        cur.execute(
+            """
+            UPDATE waste_records
+            SET area_id=%s, type_id=%s, quantity=%s, record_date=%s
+            WHERE record_id=%s
+            """,
+            (
+                request.form['area_id'],
+                request.form['type_id'],
+                request.form['quantity'],
+                request.form['date'],
+                id
             )
-            conn.commit()
-        except:
-            conn.close()
-            return "Username already exists"
+        )
+        conn.commit()
         conn.close()
+        return redirect(url_for('dashboard'))
 
-        return redirect(url_for('admin_dashboard'))
+    # GET request → load data
+    cur.execute("SELECT * FROM waste_records WHERE record_id=%s", (id,))
+    waste = cur.fetchone()
 
-    return render_template('add_user.html')
+    cur.execute("SELECT * FROM areas")
+    areas = cur.fetchall()
 
-# ---------------- RUN ----------------
+    cur.execute("SELECT * FROM waste_types")
+    waste_types = cur.fetchall()
+
+    conn.close()
+    return render_template('edit.html', waste=waste, areas=areas, waste_types=waste_types)
+
+# ---------------- RUN APP ----------------
 if __name__ == "__main__":
     app.run(debug=True, port=5001)

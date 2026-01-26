@@ -22,7 +22,8 @@
         {% endif %}
 
         <a href="{{ url_for('add') }}" class="button">➕ Add Waste</a>
-        <form method="get" style="margin:20px 0;">
+
+        <form method="get" class="sort-bar">
             <label><b>Sort By:</b></label>
             <select name="sort">
                 <option value="">-- Select --</option>
@@ -47,14 +48,14 @@
 
             {% for waste in wastes %}
             <tr>
-                <td>{{ waste.id }}</td>
-                <td>{{ waste.area }}</td>
-                <td>{{ waste.waste_type }}</td>
-                <td>{{ waste.quantity }}</td>
-                <td>{{ waste.date.split('-')[2] }}-{{ waste.date.split('-')[1] }}-{{ waste.date.split('-')[0] }}</td>
+                <td>{{ waste['record_id'] }}</td>
+                <td>{{ waste['area'] }}</td>
+                <td>{{ waste['waste_type'] }}</td>
+                <td>{{ waste['quantity'] }}</td>
+                <td>{{ waste['date'] }}</td>
                 <td>
-                    <a href="{{ url_for('edit', id=waste.id) }}">Edit</a> |
-                    <a href="{{ url_for('delete', id=waste.id) }}"
+                    <a href="{{ url_for('edit', id=waste['record_id']) }}">Edit</a> |
+                    <a href="{{ url_for('delete', id=waste['record_id']) }}"
                        onclick="return confirm('Are you sure?')">Delete</a>
                 </td>
             </tr>
