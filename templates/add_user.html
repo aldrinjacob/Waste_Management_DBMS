@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add User</title>
+    <title>Add User - Waste Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -10,23 +10,31 @@
 
     <div class="header">
         <h2>Add New User</h2>
-        <p>Admin Controlled User Creation</p>
+        <p>Create new User or Cleaner account</p>
     </div>
 
     <div class="content">
 
+        <a href="{{ url_for('admin_dashboard') }}" class="button">⬅ Back to Admin</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+
         <form method="post">
+
             <label>Username</label>
             <input type="text" name="username" required>
 
             <label>Password</label>
-            <input type="password" name="password" required>
+            <input type="text" name="password" required>
 
-            <button type="submit">Create User</button>
+            <label>Role</label>
+            <select name="role" required style="width:100%; padding:10px; border-radius:8px; margin-top:6px; margin-bottom:18px;">
+                <option value="user">House Owner (User)</option>
+                <option value="cleaner">Cleaner</option>
+            </select>
+
+            <button type="submit">Create Account</button>
+
         </form>
-
-        <br>
-        <a href="/admin" class="button">Back to Dashboard</a>
 
     </div>
 

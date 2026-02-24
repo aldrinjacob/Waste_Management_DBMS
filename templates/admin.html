@@ -1,46 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Waste Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <div class="container">
-    <h2>Admin Dashboard</h2>
-    <p>Manage users and approvals</p>
 
-    <a href="{{ url_for('dashboard') }}" class="button">⬅ Back to Dashboard</a>
-    <a href="{{ url_for('add_user') }}" class="button">➕ Add New User</a>
-    <a href="{{ url_for('logout') }}" class="button">Logout</a>
+    <div class="header">
+        <h2>Admin Dashboard</h2>
+        <p>Manage Users, Cleaners & Waste Records</p>
+    </div>
 
-    <table>
-        <tr>
-            <th>User ID</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
+    <div class="content">
 
-        {% for user in users %}
-        <tr>
-            <td>{{ user['user_id'] }}</td>
-            <td>{{ user['username'] }}</td>
-            <td>{{ user['role'] }}</td>
-            <td>{{ user['status'] }}</td>
-            <td>
-                {% if user['status'] == 'pending' %}
-                    <a href="{{ url_for('approve_user', user_id=user['user_id']) }}">
-                        Approve
-                    </a>
-                {% else %}
-                    Approved
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+        <a href="{{ url_for('dashboard') }}" class="button">📊 View Waste Records</a>
+        <a href="{{ url_for('add_user') }}" class="button">➕ Add New User</a>
+        <a href="{{ url_for('logout') }}" class="button">Logout</a>
+
+        <h3 style="margin-top:30px;">User Management</h3>
+
+        <table>
+            <tr>
+                <th>User ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+            {% for user in users %}
+            <tr>
+                <td>{{ user.user_id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+
+                <td>
+                    {% if user.status == 'approved' %}
+                        <span class="status-approved">Approved</span>
+                    {% else %}
+                        <span class="status-pending">Pending</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if user.status == 'pending' %}
+                    <a href="{{ url_for('approve_user', user_id=user.user_id) }}" class="button small">
+                            Approve
+                        </a>
+                    {% else %}
+                        Approved
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
 </div>
 
 </body>

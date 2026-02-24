@@ -72,6 +72,12 @@ body {
     box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
+/* Small Button Variant */
+.button.small {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
 /* ===== Tables ===== */
 table {
     width: 100%;
@@ -107,13 +113,15 @@ label {
     font-size: 14px;
 }
 
-input {
+input,
+select {
     width: 100%;
     padding: 11px;
     margin-top: 6px;
     margin-bottom: 18px;
     border: 1px solid #ccc;
     border-radius: 8px;
+    font-family: inherit;
 }
 
 /* ===== Submit Button ===== */
@@ -132,23 +140,13 @@ button:hover {
     opacity: 0.9;
 }
 
-/* ===== Status ===== */
-.status-approved {
-    color: green;
-    font-weight: bold;
-}
-
-.status-pending {
-    color: #ff9800;
-    font-weight: bold;
-}
 /* ===== Sorting Bar Styling ===== */
 .sort-bar {
     display: flex;
     align-items: center;
     gap: 12px;
     margin: 20px 0;
-    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+    font-family: inherit;
 }
 
 .sort-bar label {
@@ -162,7 +160,6 @@ button:hover {
     border-radius: 8px;
     border: 1px solid #ccc;
     font-size: 14px;
-    font-family: inherit;
 }
 
 .sort-bar button {
@@ -177,4 +174,21 @@ button:hover {
 
 .sort-bar button:hover {
     opacity: 0.9;
+}
+
+/* ===== Status Badges ===== */
+.status-pending {
+    color: white;
+    background-color: #ff9800;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.status-cleared {
+    color: white;
+    background-color: #4CAF50;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 13px;
 }
